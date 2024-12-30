@@ -24,16 +24,46 @@ public class AccountREST {
     public List<Account> getAllAccount() {
         return accountService.findAll();
     }
+    
+    @GetMapping("/existsByUsername/{username}")
+    public boolean existsByUsername(@PathVariable("username") String username) {
+    	return accountService.existsBy(username);
+    }
 
     @GetMapping("/{id}")
     public Account getAccountById(@PathVariable("id") String username) {
         return accountService.findById(username);
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public Account createAccount(@RequestBody Account account) {
         return accountService.save(account);
     }
+    
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
+        String username = loginRequest.get("username");
+        String password = loginRequest.get("password");
+        System.err.println("username " +username);
+        Account account = accountService.validateLogin(username, password); // Phương thức này cần kiểm tra username + password
+
+        if (account != null) {
+            // Đăng nhập thành công
+            return ResponseEntity.ok(Map.of(
+                "message", "Login successful",
+                "username", account.getUserName(),
+                "email", account.getEmail()
+            ));
+        } else {
+            // Đăng nhập thất bại
+            return ResponseEntity.status(401).body(Map.of(
+                "message", "Invalid username or password"
+            ));
+        }
+    }
+
+
+    
 //    @PostMapping
 //    public ResponseEntity<?> createAccount(@Valid @RequestBody Account account, BindingResult bindingResult) {
 //        // Kiểm tra nếu có lỗi validation
